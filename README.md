@@ -19,22 +19,30 @@ What the project does (step-by-step)
 AWS architecture (flow diagram)
 -----------------------------
 
-```mermaid
-flowchart LR
-	Client[Client / Uploader] -->|PUT image| S3In[S3 Input Bucket]
-	S3In -->|S3 Event (PUT)| Lambda[Lambda Function]
-	Lambda --> Layer[Lambda Layer\n(native libs)]
-	Lambda -->|write| S3Out[S3 Output Bucket]
-	Lambda -->|logs / metrics| CW[CloudWatch]
-	CW -->|alarm| SNS[SNS Topic]
-	SNS -->|notify| Ops[Operators / Email]
-	Terraform[Terraform]
-	Terraform -.-> S3In
-	Terraform -.-> Lambda
-	Terraform -.-> Layer
-	Terraform -.-> S3Out
-	Terraform -.-> CW
-	Terraform -.-> SNS
+```text
+Client / Uploader
+        |
+        v
+S3 Input Bucket
+        |
+        v
+Lambda Function
+        |\
+        | \--> Lambda Layer (native libs)
+        v
+S3 Output Bucket
+        |
+        v
+CloudWatch
+        |
+        v
+SNS Topic -> Operators / Email
+
+Terraform manages all resources:
+  - S3 buckets
+  - Lambda function and layer
+  - CloudWatch metrics and alarms
+  - SNS notifications
 ```
 
 Key features
@@ -49,19 +57,28 @@ Key features
 Project structure
 -----------------
 
-Top-level files and directories:
-
-- lambda/
-	- lambda_function.py — Lambda handler for image processing.
-	- requirements.txt — Python deps for the Lambda function (packaged in layer as needed).
-- scripts/
-	- build_layer_docker.sh — Build the Lambda Layer with native image libs inside Docker.
-	- deploy.sh — Convenience script to run Terraform deploy steps (project-specific).
-	- destroy.sh — Convenience script to tear down the infrastructure.
-- terraform/
-	- main.tf — Root Terraform configuration to compose modules.
-	- variables.tf, outputs.tf, provider.tf — standard Terraform artifacts.
-	- modules/ — reusable modules for Lambda, S3, CloudWatch, SNS, etc.
+```text
+.
+├── lambda/
+│   ├── lambda_function.py           # Lambda handler for image processing
+│   └── requirements.txt             # Python dependencies for the Lambda function
+├── scripts/
+│   ├── build_layer_docker.sh        # Build Lambda Layer with native image libraries
+│   ├── deploy.sh                    # Convenience script to deploy infrastructure
+│   └── destroy.sh                   # Convenience script to remove infrastructure
+└── terraform/
+    ├── main.tf                      # Root Terraform configuration
+    ├── provider.tf                  # Provider configuration
+    ├── variables.tf                 # Terraform variables
+    ├── outputs.tf                   # Terraform outputs
+    └── modules/
+        ├── cloudwatch_alarms/
+        ├── cloudwatch_metrics/
+        ├── lambda_function/
+        ├── log_alerts/
+        ├── s3_buckets/
+        └── sns_notifications/
+```
 
 How to test the project
 -----------------------
