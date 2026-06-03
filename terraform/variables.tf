@@ -64,3 +64,75 @@ variable "enable_s3_versioning" {
   type        = bool
   default     = true
 }
+# ============================================================================
+# MONITORING & ALERTING CONFIGURATION
+# ============================================================================
+
+variable "alert_email" {
+  description = "Email address for receiving CloudWatch alerts"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.alert_email)) || var.alert_email == ""
+    error_message = "Must be a valid email address or empty string."
+  }
+}
+
+variable "alert_sms" {
+  description = "Phone number for critical SMS alerts (format: +1234567890)"
+  type        = string
+  default     = ""
+}
+
+variable "metric_namespace" {
+  description = "CloudWatch custom metrics namespace"
+  type        = string
+  default     = "ImageProcessor/Lambda"
+}
+
+variable "enable_cloudwatch_dashboard" {
+  description = "Enable CloudWatch dashboard creation"
+  type        = bool
+  default     = true
+}
+
+# ============================================================================
+# ALARM THRESHOLDS
+# ============================================================================
+
+variable "error_threshold" {
+  description = "Number of Lambda errors to trigger critical alarm"
+  type        = number
+  default     = 3
+}
+
+variable "duration_threshold_ms" {
+  description = "Lambda duration threshold in milliseconds (75% of timeout recommended)"
+  type        = number
+  default     = 45000
+}
+
+variable "throttle_threshold" {
+  description = "Number of throttles to trigger alarm"
+  type        = number
+  default     = 5
+}
+
+variable "concurrent_executions_threshold" {
+  description = "Concurrent executions threshold for performance warning"
+  type        = number
+  default     = 5
+}
+
+variable "log_error_threshold" {
+  description = "Number of log errors to trigger alarm"
+  type        = number
+  default     = 1
+}
+
+variable "enable_no_invocation_alarm" {
+  description = "Enable alarm for detecting when Lambda has no invocations"
+  type        = bool
+  default     = false
+}
